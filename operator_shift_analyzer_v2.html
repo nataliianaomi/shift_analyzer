@@ -1,0 +1,505 @@
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px}
+
+:root{
+  --bg:#0f0a1e;
+  --surface:#1a1030;
+  --surface2:#221540;
+  --border:#3d2a6e;
+  --border2:#5a3d9e;
+  --accent:#a855f7;
+  --accent-dim:#7c3aed;
+  --accent-bg:rgba(168,85,247,.12);
+  --accent-bg2:rgba(168,85,247,.06);
+  --text:#f0e6ff;
+  --muted:#9d7fd4;
+  --muted2:#6b4fa0;
+  --green:#4ade80;
+  --green-bg:rgba(74,222,128,.10);
+  --red:#f87171;
+  --red-bg:rgba(248,113,113,.10);
+  --amber:#fbbf24;
+  --amber-bg:rgba(251,191,36,.10);
+  --blue:#60a5fa;
+  --blue-bg:rgba(96,165,250,.10);
+  --violet:#c084fc;
+  --violet-bg:rgba(192,132,252,.12);
+}
+
+.app{background:var(--bg);color:var(--text);min-height:600px;padding:1.5rem 1rem 3rem;border-radius:12px}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:1.5rem}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:8px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:500;color:var(--text)}
+.header p{font-size:12px;color:var(--muted);margin-top:2px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.card-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin-bottom:12px}
+
+.upload-zone{border:1.5px dashed var(--border2);border-radius:8px;padding:2rem 1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-bg2)}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:26px;margin-bottom:8px}
+.upload-zone strong{display:block;font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.upload-zone small{color:var(--muted);font-size:12px}
+.file-tag{display:none;margin-top:10px;font-size:12px;color:var(--accent);font-family:var(--font-mono)}
+
+.settings-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.6px}
+.field input,.field select{
+  font-size:13px;font-family:var(--font-mono);padding:7px 10px;
+  border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);width:130px;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.norm-val{font-size:22px;font-weight:500;color:var(--accent);font-family:var(--font-mono)}
+.norm-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.stat-box .sv{font-size:22px;font-weight:500;font-family:var(--font-mono)}
+.stat-box .sl{font-size:11px;color:var(--muted);margin-top:3px}
+.sv-purple{color:var(--accent)}
+.sv-green{color:var(--green)}
+.sv-red{color:var(--red)}
+.sv-amber{color:var(--amber)}
+.sv-blue{color:var(--blue)}
+.sv-violet{color:var(--violet)}
+
+.actions-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.actions-bar h2{font-size:14px;font-weight:500;color:var(--text)}
+.row-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-box{
+  font-size:13px;padding:7px 10px;width:180px;
+  border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);
+}
+.search-box::placeholder{color:var(--muted2)}
+.search-box:focus{outline:none;border-color:var(--accent)}
+
+.date-filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.date-filter-row input[type="date"]{
+  font-size:13px;padding:7px 10px;width:150px;
+  border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);
+  font-family:var(--font-sans);
+}
+.date-filter-row input[type="date"]:focus{outline:none;border-color:var(--accent)}
+
+.shift-filter{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.sf-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:500}
+.sf-btn{
+  padding:4px 12px;border-radius:99px;
+  border:1px solid var(--border);background:transparent;
+  font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);
+  transition:all .15s;
+}
+.sf-btn:hover{border-color:var(--border2);color:var(--text)}
+.sf-btn.active-all{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.sf-btn.active-day{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+.sf-btn.active-split{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+.sf-btn.active-night{background:var(--violet-bg);color:var(--violet);border-color:var(--violet)}
+.sf-btn.active-unknown{background:rgba(157,127,212,.1);color:var(--muted);border-color:var(--muted2)}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--surface2)}
+th{text-align:left;padding:9px 12px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;color:var(--text)}
+tr:last-child td{border-bottom:none}
+.td-name{font-family:var(--font-sans);font-weight:500;font-size:13px;color:var(--text)}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--accent-bg2)}
+.row-ok{border-left:3px solid var(--green)}
+.row-bad{border-left:3px solid var(--red)}
+.td-ok{color:var(--green);font-weight:500}
+.td-bad{color:var(--red);font-weight:500}
+.td-short{color:var(--red);font-weight:500}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;font-family:var(--font-sans)}
+.b-ok{background:var(--green-bg);color:var(--green)}
+.b-bad{background:var(--red-bg);color:var(--red)}
+.b-day{background:var(--amber-bg);color:var(--amber)}
+.b-split{background:var(--blue-bg);color:var(--blue)}
+.b-night{background:var(--violet-bg);color:var(--violet)}
+.b-unk{background:rgba(157,127,212,.1);color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s}
+.btn:hover{border-color:var(--border2);color:var(--text);background:var(--accent-bg2)}
+.btn-primary{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent);color:#fff}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted);background:var(--bg)}
+#error-msg{color:var(--red);background:var(--red-bg);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:10px 14px;margin-top:10px;font-size:13px;display:none}
+#results-section{display:none}
+
+.col-hint{margin-top:10px;padding:10px 14px;background:var(--accent-bg2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.6}
+.col-hint b{color:var(--accent);font-weight:500}
+</style>
+
+<div class="app">
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden">Анализ смен операторов</h2>
+
+<div class="header">
+  <div class="logo">⟳</div>
+  <div>
+    <h1>Анализ смен операторов</h1>
+    <p>Загрузите Excel или CSV — получите отчёт по сменам и нормам</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Источник данных</div>
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+    <div class="uz-icon">📂</div>
+    <strong>Перетащите файл или кликните</strong>
+    <small>.xlsx, .xls, .csv</small>
+    <div class="file-tag" id="file-name"></div>
+  </div>
+  <div id="error-msg"></div>
+  <div class="col-hint">
+    <b>Ожидаемые колонки:</b> A — Оператор &nbsp;|&nbsp; B — Дата/время начала смены &nbsp;|&nbsp; C — Активные ч &nbsp;|&nbsp; D — Онлайн ч &nbsp;|&nbsp; E — Занят ч &nbsp;|&nbsp; F — Оффлайн ч<br>
+    <b>Смена определяется</b> по часу UTC из колонки B: Дневная 06–18 · 12/12 09–21 · Ночная 18–06<br>
+    <b>Фильтр по дате</b> читает дату из колонки B вашей выгрузки
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Настройки нормы</div>
+  <div class="settings-row">
+    <div class="field"><label>Длина смены (ч)</label><input type="number" id="shift-hours" value="12" min="1" max="24" step="0.5" /></div>
+    <div class="field"><label>Обед (ч)</label><input type="number" id="lunch-hours" value="1" min="0" max="4" step="0.25" /></div>
+    <div class="field"><label>Перерывы (мин)</label><input type="number" id="break-min" value="40" min="0" max="120" step="5" /></div>
+    <div>
+      <div class="norm-val" id="norm-display">10.33 ч</div>
+      <div class="norm-lbl">Норма часов</div>
+    </div>
+  </div>
+</div>
+
+<div id="results-section">
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="card" style="padding:1rem 1.25rem">
+    <div class="actions-bar">
+      <h2>Результаты</h2>
+      <div class="row-right">
+        <input class="search-box" type="text" id="search-box" placeholder="Поиск по имени…" />
+        <button class="btn btn-primary" id="download-btn">⬇ Скачать Excel</button>
+        <button class="btn" id="clear-btn">✕ Очистить</button>
+      </div>
+    </div>
+
+    <div class="date-filter-row">
+      <div class="field"><label>Дата с</label><input type="date" id="date-from" /></div>
+      <div class="field"><label>Дата по</label><input type="date" id="date-to" /></div>
+      <button class="btn" id="reset-dates" style="align-self:flex-end">Сбросить</button>
+    </div>
+
+    <div class="shift-filter">
+      <span class="sf-lbl">Смена:</span>
+      <button class="sf-btn active-all" data-shift="all">Все</button>
+      <button class="sf-btn" data-shift="day">☀ Дневная 06–18</button>
+      <button class="sf-btn" data-shift="split">◑ 12/12 09–21</button>
+      <button class="sf-btn" data-shift="night">☾ Ночная 18–06</button>
+      <button class="sf-btn" data-shift="unknown">— Не определена</button>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Оператор</th><th>Смена</th><th>Дата</th><th>Час нач.</th>
+              <th>Актив ч</th><th>Онлайн ч</th><th>Занят ч</th><th>Оффлайн ч</th>
+              <th>Итог</th><th>Недоработка</th><th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none">
+          <div style="font-size:32px;margin-bottom:8px">🔍</div>
+          <p>Нет данных по выбранным фильтрам</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let allRows = [];
+let rawGlobal = null;
+let activeShift = 'all';
+
+const NORM = () => {
+  const s = parseFloat(document.getElementById('shift-hours').value)||12;
+  const l = parseFloat(document.getElementById('lunch-hours').value)||1;
+  const b = (parseFloat(document.getElementById('break-min').value)||40)/60;
+  return +((s-l-b).toFixed(2));
+};
+
+function toNum(v){
+  if(v===null||v===undefined||v==='')return 0;
+  const n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?0:n;
+}
+function fmt(n){return Number(n).toFixed(2)}
+function showError(msg){const el=document.getElementById('error-msg');el.textContent=msg;el.style.display=msg?'block':'none'}
+
+/* ── Парсим дату из ячейки Excel ── */
+function parseExcelDate(v, wb){
+  if(v===null||v===undefined||v==='')return null;
+  // Число — serial date Excel
+  if(typeof v==='number'){
+    // XLSX serial → JS Date (UTC)
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return isNaN(d)?null:d;
+  }
+  if(v instanceof Date) return isNaN(v)?null:v;
+  if(typeof v==='string'){
+    // dd.mm.yyyy HH:MM или dd.mm.yyyy
+    let m=v.match(/^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
+    if(m){
+      const yr=m[3].length===2?2000+parseInt(m[3]):parseInt(m[3]);
+      const mo=parseInt(m[2])-1;
+      const dy=parseInt(m[1]);
+      const hr=parseInt(m[4]||0);
+      const mn=parseInt(m[5]||0);
+      return new Date(Date.UTC(yr,mo,dy,hr,mn));
+    }
+    // ISO
+    const d2=new Date(v);
+    return isNaN(d2)?null:d2;
+  }
+  return null;
+}
+
+/* ── Определяем тип смены по UTC-часу начала ── */
+function detectShift(startHourUTC){
+  if(startHourUTC===null||startHourUTC===undefined)return 'unknown';
+  const h=((Math.floor(startHourUTC))%24+24)%24;
+  // Ночная: 18–06
+  if(h>=18||h<6)return 'night';
+  // 12/12: 09–21 — если час 9–11 ставим split (начало 09:00)
+  if(h>=9&&h<12)return 'split';
+  // Дневная: 06–18
+  return 'day';
+}
+
+function shiftLabel(s){return{day:'Дневная',split:'12/12',night:'Ночная'}[s]||'—'}
+function shiftBadge(s){return{day:'b-day',split:'b-split',night:'b-night'}[s]||'b-unk'}
+
+/* ── Чтение файла ── */
+const fileInput=document.getElementById('file-input');
+const uploadZone=document.getElementById('upload-zone');
+fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag')});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+
+function handleFile(file){
+  if(!file)return;
+  showError('');
+  const fn=document.getElementById('file-name');
+  fn.textContent='📄 '+file.name;fn.style.display='block';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      /* cellDates:false — читаем числа, парсим сами чтобы сохранить UTC */
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:false});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false,raw:true});
+      if(!rows||rows.length<2){showError('Файл пуст или менее 2 строк.');return;}
+      rawGlobal=rows;
+      processRows(rows);
+    }catch(err){showError('Ошибка чтения: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processRows(rawRows){
+  allRows=[];
+  rawRows.slice(1).forEach((row,idx)=>{
+    const name=String(row[0]||'').trim();
+    if(!name)return;
+
+    const dateRaw=row[1];
+    const dateObj=parseExcelDate(dateRaw);
+
+    // UTC-час из даты
+    let startHourUTC=null;
+    if(dateObj){
+      startHourUTC=dateObj.getUTCHours()+(dateObj.getUTCMinutes()/60);
+    }
+
+    const activeH=toNum(row[2]);
+    const onlineH=toNum(row[3]);
+    const busyH=toNum(row[4]);
+    const offlineH=toNum(row[5]);
+    const norm=NORM();
+    const totalH=activeH;
+    const shortH=totalH<norm?+(norm-totalH).toFixed(2):0;
+    const shift=detectShift(startHourUTC);
+
+    // Дата для фильтра — YYYY-MM-DD UTC
+    let dateKey=null;
+    if(dateObj){
+      const y=dateObj.getUTCFullYear();
+      const m=String(dateObj.getUTCMonth()+1).padStart(2,'0');
+      const d=String(dateObj.getUTCDate()).padStart(2,'0');
+      dateKey=`${y}-${m}-${d}`;
+    }
+
+    const displayDate=dateObj
+      ?`${String(dateObj.getUTCDate()).padStart(2,'0')}.${String(dateObj.getUTCMonth()+1).padStart(2,'0')}.${dateObj.getUTCFullYear()}`
+      :'—';
+
+    const displayHour=startHourUTC!==null
+      ?`${String(Math.floor(startHourUTC)).padStart(2,'0')}:${String(Math.round((startHourUTC%1)*60)).padStart(2,'0')}`
+      :'—';
+
+    allRows.push({idx:idx+1,name,dateObj,dateKey,displayDate,displayHour,startHourUTC,
+      activeH,onlineH,busyH,offlineH,totalH,shortH,isOk:totalH>=norm,shift});
+  });
+  applyAndRender();
+  document.getElementById('results-section').style.display='block';
+}
+
+/* ── Фильтрация ── */
+function applyAndRender(){
+  const q=document.getElementById('search-box').value.toLowerCase().trim();
+  const df=document.getElementById('date-from').value; // YYYY-MM-DD
+  const dt=document.getElementById('date-to').value;
+
+  const filtered=allRows.filter(r=>{
+    if(q&&!r.name.toLowerCase().includes(q))return false;
+    if(activeShift!=='all'&&r.shift!==activeShift)return false;
+    if(df&&(!r.dateKey||r.dateKey<df))return false;
+    if(dt&&(!r.dateKey||r.dateKey>dt))return false;
+    return true;
+  });
+
+  renderStats(filtered);
+  renderTable(filtered);
+}
+
+function renderStats(rows){
+  const norm=NORM();
+  const total=rows.length;
+  const ok=rows.filter(r=>r.isOk).length;
+  const bad=total-ok;
+  const avg=total?(rows.reduce((s,r)=>s+r.totalH,0)/total):0;
+  const short=rows.reduce((s,r)=>s+r.shortH,0);
+  const dayCnt=rows.filter(r=>r.shift==='day').length;
+  const splitCnt=rows.filter(r=>r.shift==='split').length;
+  const nightCnt=rows.filter(r=>r.shift==='night').length;
+
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-box"><div class="sv sv-purple">${total}</div><div class="sl">Операторов</div></div>
+    <div class="stat-box"><div class="sv sv-green">${ok}</div><div class="sl">Выполнили норму</div></div>
+    <div class="stat-box"><div class="sv sv-red">${bad}</div><div class="sl">Недоработка</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--text)">${fmt(avg)}</div><div class="sl">Среднее часов</div></div>
+    <div class="stat-box"><div class="sv sv-red">${fmt(short)}</div><div class="sl">Недоработано ч</div></div>
+    <div class="stat-box"><div class="sv sv-amber">${dayCnt}</div><div class="sl">Дневная</div></div>
+    <div class="stat-box"><div class="sv sv-blue">${splitCnt}</div><div class="sl">12/12</div></div>
+    <div class="stat-box"><div class="sv sv-violet">${nightCnt}</div><div class="sl">Ночная</div></div>
+  `;
+}
+
+function renderTable(rows){
+  const tbody=document.getElementById('result-body');
+  const es=document.getElementById('empty-state');
+  if(!rows.length){tbody.innerHTML='';es.style.display='block';return;}
+  es.style.display='none';
+  tbody.innerHTML=rows.map((r,i)=>`
+    <tr class="${r.isOk?'row-ok':'row-bad'}">
+      <td style="color:var(--muted2)">${i+1}</td>
+      <td class="td-name">${esc(r.name)}</td>
+      <td><span class="badge ${shiftBadge(r.shift)}">${shiftLabel(r.shift)}</span></td>
+      <td style="color:var(--muted);font-size:11px">${r.displayDate}</td>
+      <td style="color:var(--muted);font-size:11px">${r.displayHour}</td>
+      <td>${fmt(r.activeH)}</td>
+      <td>${fmt(r.onlineH)}</td>
+      <td>${fmt(r.busyH)}</td>
+      <td style="color:var(--muted)">${fmt(r.offlineH)}</td>
+      <td class="${r.isOk?'td-ok':'td-bad'}">${fmt(r.totalH)}</td>
+      <td class="${r.shortH>0?'td-short':''}">${r.shortH>0?'−'+fmt(r.shortH):'—'}</td>
+      <td><span class="badge ${r.isOk?'b-ok':'b-bad'}">${r.isOk?'✓ Норма':'✗ Недоработка'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+/* ── Слушатели ── */
+document.getElementById('search-box').addEventListener('input',applyAndRender);
+document.getElementById('date-from').addEventListener('change',applyAndRender);
+document.getElementById('date-to').addEventListener('change',applyAndRender);
+document.getElementById('reset-dates').addEventListener('click',()=>{
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  applyAndRender();
+});
+
+document.querySelectorAll('.sf-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    activeShift=btn.dataset.shift;
+    document.querySelectorAll('.sf-btn').forEach(b=>{
+      b.className='sf-btn';
+      if(b.dataset.shift===activeShift){
+        const map={all:'active-all',day:'active-day',split:'active-split',night:'active-night',unknown:'active-unknown'};
+        b.classList.add(map[activeShift]);
+      }
+    });
+    applyAndRender();
+  });
+});
+
+['shift-hours','lunch-hours','break-min'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    document.getElementById('norm-display').textContent=NORM()+' ч';
+    if(rawGlobal)processRows(rawGlobal);
+  });
+});
+
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  allRows=[];rawGlobal=null;activeShift='all';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('file-name').style.display='none';
+  document.getElementById('file-name').textContent='';
+  document.getElementById('search-box').value='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  fileInput.value='';showError('');
+  document.querySelectorAll('.sf-btn').forEach(b=>b.className='sf-btn');
+  document.querySelector('[data-shift="all"]').classList.add('active-all');
+});
+
+document.getElementById('download-btn').addEventListener('click',()=>{
+  const rows=allRows.filter(r=>{
+    const q=document.getElementById('search-box').value.toLowerCase().trim();
+    const df=document.getElementById('date-from').value;
+    const dt=document.getElementById('date-to').value;
+    if(q&&!r.name.toLowerCase().includes(q))return false;
+    if(activeShift!=='all'&&r.shift!==activeShift)return false;
+    if(df&&(!r.dateKey||r.dateKey<df))return false;
+    if(dt&&(!r.dateKey||r.dateKey>dt))return false;
+    return true;
+  });
+  if(!rows.length)return;
+  const headers=['№','Оператор','Смена','Дата','Час начала','Активные ч','Онлайн ч','Занят ч','Оффлайн ч','Итог (факт)','Недоработка','Статус'];
+  const data=rows.map((r,i)=>[i+1,r.name,shiftLabel(r.shift),r.displayDate,r.displayHour,
+    +fmt(r.activeH),+fmt(r.onlineH),+fmt(r.busyH),+fmt(r.offlineH),
+    +fmt(r.totalH),r.shortH>0?+fmt(r.shortH):0,r.isOk?'Норма':'Недоработка']);
+  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
+  ws['!cols']=[{wch:4},{wch:28},{wch:12},{wch:12},{wch:10},{wch:12},{wch:10},{wch:10},{wch:11},{wch:12},{wch:13},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Результаты');
+  XLSX.writeFile(wb,`operator_report_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+</script>
