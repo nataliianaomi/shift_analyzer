@@ -1,0 +1,418 @@
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary)}
+.wrap{padding:1rem 0}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--color-text-secondary);margin-bottom:12px}
+.upload-zone{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:2rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--color-border-info);background:var(--color-background-info)}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:28px;margin-bottom:8px}
+.upload-zone strong{display:block;font-size:14px;font-weight:500;margin-bottom:4px}
+.upload-zone small{color:var(--color-text-secondary);font-size:12px}
+.file-tag{display:none;margin-top:10px;font-size:12px;color:var(--color-text-info);font-family:var(--font-mono)}
+.settings-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;color:var(--color-text-secondary);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{font-size:13px;font-family:var(--font-mono);padding:7px 10px;width:130px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.norm-box{padding-top:2px}
+.norm-val{font-size:22px;font-weight:500;color:var(--color-text-info);font-family:var(--font-mono)}
+.norm-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1rem}
+.stat-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.stat-box .sv{font-size:22px;font-weight:500;font-family:var(--font-mono)}
+.stat-box .sl{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.sv-blue{color:var(--color-text-info)}
+.sv-green{color:var(--color-text-success)}
+.sv-red{color:var(--color-text-danger)}
+.sv-amber{color:var(--color-text-warning)}
+.actions-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.actions-bar h2{font-size:15px;font-weight:500}
+.row-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-box{font-size:13px;padding:7px 10px;width:180px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.search-box::placeholder{color:var(--color-text-secondary)}
+.shift-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sf-btn{padding:5px 12px;border-radius:99px;border:0.5px solid var(--color-border-secondary);background:transparent;font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);transition:all .15s}
+.sf-btn.active-day{background:var(--color-background-warning);color:var(--color-text-warning);border-color:var(--color-border-warning)}
+.sf-btn.active-split{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.sf-btn.active-night{background:var(--color-background-primary);color:#a78bfa;border-color:#a78bfa}
+.sf-btn.active-all{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+.sf-btn.active-unknown{background:var(--color-background-secondary);color:var(--color-text-secondary);border-color:var(--color-border-secondary)}
+.table-wrap{overflow-x:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--color-background-secondary)}
+th{text-align:left;padding:9px 12px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+td{padding:9px 12px;border-bottom:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);font-size:12px}
+tr:last-child td{border-bottom:none}
+.td-name{font-family:var(--font-sans);font-weight:500;font-size:13px}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--color-background-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;font-family:var(--font-sans)}
+.b-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.b-bad{background:var(--color-background-danger);color:var(--color-text-danger)}
+.b-day{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-split{background:var(--color-background-info);color:var(--color-text-info)}
+.b-night{background:rgba(139,92,246,.12);color:#7c3aed}
+.b-unk{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.row-bad{border-left:3px solid var(--color-border-danger)}
+.row-ok{border-left:3px solid var(--color-border-success)}
+.td-total-ok{color:var(--color-text-success);font-weight:500}
+.td-total-bad{color:var(--color-text-danger);font-weight:500}
+.td-short{color:var(--color-text-danger);font-weight:500}
+#results-section{display:none}
+#error-msg{color:var(--color-text-danger);background:var(--color-background-danger);border:0.5px solid var(--color-border-danger);border-radius:var(--border-radius-md);padding:10px 14px;margin-top:10px;font-size:13px;display:none}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--color-text-secondary)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);transition:background .15s}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-primary{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.btn-primary:hover{opacity:.85}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.date-filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Анализ смен операторов — загрузите Excel файл для анализа</h2>
+
+<div class="card">
+  <div class="card-title">Источник данных</div>
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+    <div class="uz-icon">📂</div>
+    <strong>Перетащите файл или кликните для выбора</strong>
+    <small>Поддерживаются .xlsx, .xls, .csv</small>
+    <div class="file-tag" id="file-name"></div>
+  </div>
+  <div id="error-msg"></div>
+</div>
+
+<div class="card">
+  <div class="card-title">Настройки нормы</div>
+  <div class="settings-row">
+    <div class="field"><label>Длина смены (ч)</label><input type="number" id="shift-hours" value="12" min="1" max="24" step="0.5" /></div>
+    <div class="field"><label>Обед (ч)</label><input type="number" id="lunch-hours" value="1" min="0" max="4" step="0.25" /></div>
+    <div class="field"><label>Перерывы (мин)</label><input type="number" id="break-min" value="40" min="0" max="120" step="5" /></div>
+    <div class="norm-box">
+      <div class="norm-val" id="norm-display">10.33 ч</div>
+      <div class="norm-lbl">Норма часов</div>
+    </div>
+  </div>
+</div>
+
+<div id="results-section">
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="card" style="padding:1rem 1.25rem">
+    <div class="actions-bar">
+      <h2>Результаты</h2>
+      <div class="row-right">
+        <input class="search-box" type="text" id="search-box" placeholder="Поиск по имени…" />
+        <button class="btn btn-primary" id="download-btn">⬇ Скачать Excel</button>
+        <button class="btn" id="clear-btn">✕ Очистить</button>
+      </div>
+    </div>
+
+    <div class="date-filter-row">
+      <div class="field">
+        <label>Дата с</label>
+        <input type="date" id="date-from" style="width:150px;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary)" />
+      </div>
+      <div class="field">
+        <label>Дата по</label>
+        <input type="date" id="date-to" style="width:150px;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary)" />
+      </div>
+      <button class="btn" id="reset-dates" style="align-self:flex-end">Сбросить даты</button>
+    </div>
+
+    <div class="shift-filter" style="margin-top:12px">
+      <span style="font-size:11px;color:var(--color-text-secondary);align-self:center;text-transform:uppercase;letter-spacing:.5px;font-weight:500">Смена:</span>
+      <button class="sf-btn active-all" data-shift="all">Все</button>
+      <button class="sf-btn" data-shift="day">Дневная (06–18 UTC)</button>
+      <button class="sf-btn" data-shift="split">12/12 (09–21 UTC)</button>
+      <button class="sf-btn" data-shift="night">Ночная (18–06 UTC)</button>
+      <button class="sf-btn" data-shift="unknown">Не определена</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="result-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Оператор</th><th>Смена</th><th>Дата</th>
+            <th>Актив ч</th><th>Онлайн ч</th><th>Занят ч</th><th>Оффлайн ч</th>
+            <th>Итог (факт)</th><th>Недоработка</th><th>Статус</th>
+          </tr>
+        </thead>
+        <tbody id="result-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div style="font-size:32px;margin-bottom:8px">🔍</div>
+        <p>Операторы не найдены по вашему запросу</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let allRows = [];
+let filteredRows = [];
+let activeShiftFilter = 'all';
+let rawRowsGlobal = null;
+
+const NORM = () => {
+  const s = parseFloat(document.getElementById('shift-hours').value)||12;
+  const l = parseFloat(document.getElementById('lunch-hours').value)||1;
+  const b = (parseFloat(document.getElementById('break-min').value)||40)/60;
+  return +((s-l-b).toFixed(2));
+};
+
+function toNum(v){
+  if(v===null||v===undefined||v==='')return null;
+  const n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?null:n;
+}
+function fmt(n){return(n||0).toFixed(2)}
+function showError(msg){
+  const el=document.getElementById('error-msg');
+  el.textContent=msg;el.style.display=msg?'block':'none';
+}
+
+function detectShift(startHour){
+  if(startHour===null||startHour===undefined)return 'unknown';
+  const h=((startHour%24)+24)%24;
+  if(h>=6&&h<9)return 'day';
+  if(h>=9&&h<12)return 'split';
+  if(h>=12&&h<18)return 'day';
+  if(h>=18||h<6)return 'night';
+  return 'unknown';
+}
+
+function shiftLabel(s){
+  if(s==='day')return'Дневная';
+  if(s==='split')return'12/12';
+  if(s==='night')return'Ночная';
+  return'—';
+}
+function shiftBadge(s){
+  if(s==='day')return'b-day';
+  if(s==='split')return'b-split';
+  if(s==='night')return'b-night';
+  return'b-unk';
+}
+
+function parseDate(v){
+  if(!v)return null;
+  if(typeof v==='number'){
+    const d=XLSX.SSF.parse_date_code(v);
+    if(d)return new Date(d.y,d.m-1,d.d,d.H||0,d.M||0,d.S||0);
+  }
+  if(typeof v==='string'){
+    const m=v.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})\s*(\d{1,2})?:?(\d{2})?/);
+    if(m){
+      const yr=m[3].length===2?2000+parseInt(m[3]):parseInt(m[3]);
+      return new Date(yr,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[4]||0),parseInt(m[5]||0));
+    }
+    const d2=new Date(v);if(!isNaN(d2))return d2;
+  }
+  return null;
+}
+
+['shift-hours','lunch-hours','break-min'].forEach(id=>
+  document.getElementById(id).addEventListener('input',()=>{
+    document.getElementById('norm-display').textContent=NORM()+' ч';
+    if(rawRowsGlobal)processAndRender(rawRowsGlobal);
+  })
+);
+
+const fileInput=document.getElementById('file-input');
+const uploadZone=document.getElementById('upload-zone');
+fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag')});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+
+function handleFile(file){
+  if(!file)return;
+  showError('');
+  const fn=document.getElementById('file-name');
+  fn.textContent='📄 '+file.name;fn.style.display='block';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false});
+      if(!rows||rows.length<2){showError('Файл пуст или содержит менее 2 строк.');return;}
+      rawRowsGlobal=rows;
+      processAndRender(rows);
+    }catch(err){showError('Ошибка чтения: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processAndRender(rawRows){
+  const norm=NORM();
+  allRows=[];
+  rawRows.slice(1).forEach((row,idx)=>{
+    const name=String(row[0]||'').trim();
+    if(!name)return;
+    const dateVal=row[1];
+    const activeH=toNum(row[2]);
+    const onlineH=toNum(row[3]);
+    const busyH=toNum(row[4]);
+    const offlineH=toNum(row[5]);
+    const startHourRaw=row[6];
+
+    let dateObj=parseDate(dateVal);
+    let startHour=null;
+
+    if(startHourRaw!==''&&startHourRaw!==null&&startHourRaw!==undefined){
+      const sh=parseFloat(String(startHourRaw).replace(',','.'));
+      if(!isNaN(sh))startHour=sh;
+    }
+    if(startHour===null&&dateObj){
+      startHour=dateObj.getHours();
+    }
+
+    const shift=detectShift(startHour);
+    const totalH=activeH!==null?activeH:0;
+    const shortH=totalH<norm?+(norm-totalH).toFixed(2):0;
+
+    allRows.push({
+      idx:idx+1,name,
+      dateObj,
+      dateStr:dateObj?dateObj.toLocaleDateString('ru-RU'):'—',
+      activeH:activeH!==null?activeH:0,
+      onlineH:onlineH!==null?onlineH:0,
+      busyH:busyH!==null?busyH:0,
+      offlineH:offlineH!==null?offlineH:0,
+      totalH,shortH,
+      isOk:totalH>=norm,
+      shift,
+    });
+  });
+  applyFiltersAndRender();
+  document.getElementById('results-section').style.display='block';
+}
+
+function applyFiltersAndRender(){
+  const q=document.getElementById('search-box').value.toLowerCase();
+  const df=document.getElementById('date-from').value;
+  const dt=document.getElementById('date-to').value;
+  const dfDate=df?new Date(df):null;
+  const dtDate=dt?new Date(dt+'T23:59:59'):null;
+
+  filteredRows=allRows.filter(r=>{
+    if(q&&!r.name.toLowerCase().includes(q))return false;
+    if(activeShiftFilter!=='all'&&r.shift!==activeShiftFilter)return false;
+    if(dfDate&&r.dateObj&&r.dateObj<dfDate)return false;
+    if(dtDate&&r.dateObj&&r.dateObj>dtDate)return false;
+    return true;
+  });
+  renderStats();
+  renderTable(filteredRows);
+}
+
+function renderStats(){
+  const norm=NORM();
+  const rows=filteredRows.length?filteredRows:allRows;
+  const total=rows.length;
+  const okCnt=rows.filter(r=>r.isOk).length;
+  const badCnt=total-okCnt;
+  const avgH=total?(rows.reduce((s,r)=>s+r.totalH,0)/total):0;
+  const totalShort=rows.reduce((s,r)=>s+r.shortH,0);
+  const dayCnt=rows.filter(r=>r.shift==='day').length;
+  const splitCnt=rows.filter(r=>r.shift==='split').length;
+  const nightCnt=rows.filter(r=>r.shift==='night').length;
+
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-box"><div class="sv sv-blue">${total}</div><div class="sl">Всего операторов</div></div>
+    <div class="stat-box"><div class="sv sv-green">${okCnt}</div><div class="sl">Выполнили норму</div></div>
+    <div class="stat-box"><div class="sv sv-red">${badCnt}</div><div class="sl">Не выполнили</div></div>
+    <div class="stat-box"><div class="sv">${fmt(avgH)}</div><div class="sl">Среднее часов</div></div>
+    <div class="stat-box"><div class="sv sv-red">${fmt(totalShort)}</div><div class="sl">Суммарная недоработка</div></div>
+    <div class="stat-box"><div class="sv sv-amber">${dayCnt}</div><div class="sl">Дневная смена</div></div>
+    <div class="stat-box"><div class="sv sv-blue">${splitCnt}</div><div class="sl">Смена 12/12</div></div>
+    <div class="stat-box"><div class="sv" style="color:#7c3aed">${nightCnt}</div><div class="sl">Ночная смена</div></div>
+  `;
+}
+
+function renderTable(rows){
+  const tbody=document.getElementById('result-body');
+  const es=document.getElementById('empty-state');
+  if(!rows.length){tbody.innerHTML='';es.style.display='block';return;}
+  es.style.display='none';
+  tbody.innerHTML=rows.map((r,i)=>`
+    <tr class="${r.isOk?'row-ok':'row-bad'}">
+      <td style="color:var(--color-text-secondary)">${i+1}</td>
+      <td class="td-name">${esc(r.name)}</td>
+      <td><span class="badge ${shiftBadge(r.shift)}">${shiftLabel(r.shift)}</span></td>
+      <td style="color:var(--color-text-secondary);font-size:11px">${r.dateStr}</td>
+      <td>${fmt(r.activeH)}</td>
+      <td>${fmt(r.onlineH)}</td>
+      <td>${fmt(r.busyH)}</td>
+      <td style="color:var(--color-text-secondary)">${fmt(r.offlineH)}</td>
+      <td class="${r.isOk?'td-total-ok':'td-total-bad'}">${fmt(r.totalH)}</td>
+      <td class="${r.shortH>0?'td-short':''}">${r.shortH>0?'−'+fmt(r.shortH):'—'}</td>
+      <td><span class="badge ${r.isOk?'b-ok':'b-bad'}">${r.isOk?'✓ Норма':'✗ Недоработка'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.getElementById('search-box').addEventListener('input',applyFiltersAndRender);
+document.getElementById('date-from').addEventListener('change',applyFiltersAndRender);
+document.getElementById('date-to').addEventListener('change',applyFiltersAndRender);
+document.getElementById('reset-dates').addEventListener('click',()=>{
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  applyFiltersAndRender();
+});
+
+document.querySelectorAll('.sf-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    activeShiftFilter=btn.dataset.shift;
+    document.querySelectorAll('.sf-btn').forEach(b=>{
+      b.className='sf-btn';
+      if(b.dataset.shift===activeShiftFilter){
+        const cls={all:'active-all',day:'active-day',split:'active-split',night:'active-night',unknown:'active-unknown'};
+        b.classList.add(cls[activeShiftFilter]||'active-all');
+      }
+    });
+    applyFiltersAndRender();
+  });
+});
+
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  allRows=[];filteredRows=[];rawRowsGlobal=null;
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('file-name').style.display='none';
+  document.getElementById('file-name').textContent='';
+  document.getElementById('search-box').value='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  fileInput.value='';
+  showError('');
+  activeShiftFilter='all';
+  document.querySelectorAll('.sf-btn').forEach(b=>{b.className='sf-btn'});
+  document.querySelector('[data-shift="all"]').classList.add('active-all');
+});
+
+document.getElementById('download-btn').addEventListener('click',()=>{
+  if(!filteredRows.length)return;
+  const headers=['№','Оператор','Смена','Дата','Активные ч','Онлайн ч','Занят ч','Оффлайн ч','Итог (факт)','Недоработка','Статус'];
+  const data=filteredRows.map((r,i)=>[
+    i+1,r.name,shiftLabel(r.shift),r.dateStr,
+    +fmt(r.activeH),+fmt(r.onlineH),+fmt(r.busyH),+fmt(r.offlineH),
+    +fmt(r.totalH),r.shortH>0?+fmt(r.shortH):0,
+    r.isOk?'Норма':'Недоработка'
+  ]);
+  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
+  ws['!cols']=[{wch:4},{wch:28},{wch:12},{wch:12},{wch:12},{wch:10},{wch:10},{wch:11},{wch:12},{wch:13},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Результаты');
+  XLSX.writeFile(wb,`operator_report_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+</script>
